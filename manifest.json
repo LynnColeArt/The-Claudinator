@@ -1,0 +1,31 @@
+{
+  "name": "The Claudinator",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "description": "Conviniently download your claude AI chats in useful json format.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "downloads"
+  ],
+  "host_permissions": [
+    "*://claude.ai/*",
+    "*://*.claude.ai/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://claude.ai/*",
+        "*://*.claude.ai/*"
+      ],
+      "js": ["content_script.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

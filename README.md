@@ -1,0 +1,1 @@
+# Claude Chat Exporter Extension
