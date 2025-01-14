@@ -38,29 +38,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("[Content Script] Received DUMP_CHAT request.");
 
     try {
-      // Grab user + assistant messages, in DOM order
+      // Use the updated selector for both user and assistant messages
       const allEls = document.querySelectorAll(
-        'div[data-testid="user-message"], div[data-testid="assistant-message"]'
+        'div[data-testid="user-message"], div.font-claude-message'
       );
       console.log(`[Content Script] Found ${allEls.length} total messages (user+assistant).`);
 
       const messages = [];
-      allEls.forEach((el, index) => {
-        // Determine type based on data-testid
-        const testid = el.getAttribute('data-testid');
-        let type = "unknown";
-        if (testid === "user-message") {
-          type = "user";
-        } else if (testid === "assistant-message") {
-          type = "assistant";
+      allEls.forEach(el => {
+        // Determine role based on element attributes or classes
+        let role;
+        if (el.hasAttribute('data-testid') && el.getAttribute('data-testid') === "user-message") {
+          role = "user";
+        } else {
+          // Default to assistant for elements not identified as user messages
+          role = "assistant";
         }
 
         // Capture all text content inside the message element
         const content = el.textContent.trim();
 
+        // Push the new structured object
         messages.push({
-          index,
-          type,
+          role,
           content
         });
       });
@@ -69,7 +69,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ success: true, data: messages });
     } catch (err) {
       console.error("[Content Script] Error while dumping chat messages:", err);
-      // Log to background
       chrome.runtime.sendMessage({
         type: 'LOG_ERROR',
         from: 'content_script',
@@ -79,7 +78,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
       sendResponse({ success: false, error: err.message });
     }
-
-    return true; // Keep message channel open for async
+    return true; // Keep message channel open for async responses
   }
 });
+
